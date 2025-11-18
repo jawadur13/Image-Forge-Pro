@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IMAGE FORGE PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+                /* ------------------------------
+           GLOBAL STYLES + GLASS THEME
+        --------------------------------*/
+
+                body {
+                    margin: 0;
+                    font-family: "Segoe UI", sans-serif;
+                    background: linear-gradient(160deg,#0f0f16,#0b0b12,#0f0f14,#050507);
+                    background-size: 300% 300%;
+                    animation: bgMove 20s ease infinite;
+                    color: #e5e5e5;
+                    -webkit-user-select: none;
+                    user-select: none;
+                }
+
+                @keyframes bgMove {
+                    0% {
+                        background-position: 0% 50%;
+                    }
+
+                    50% {
+                        background-position: 100% 50%;
+                    }
+
+                    100% {
+                        background-position: 0% 50%;
+                    }
+                }
+
+                h1 {
+                    text-align: center;
+                    padding: 20px 0;
+                    font-size: 1.8rem;
+                    color: #ffffff;
+                    letter-spacing: 1px;
+                    text-shadow: 0 0 10px #6d20ff;
+                }
+
+                .container {
+                    max-width: 1200px;
+                    margin: auto;
+                    padding: 20px;
+                }
+
+                /* GLASS CARD */
+                .card {
+                    background: rgba(255,255,255,0.06);
+                    backdrop-filter: blur(15px);
+                    -webkit-backdrop-filter: blur(15px);
+                    border: 1px solid rgba(255,255,255,0.18);
+                    border-radius: 20px;
+                    padding: 20px;
+                    margin-bottom: 25px;
+                    box-shadow: 0 0 25px rgba(90,30,255,0.25);
+                }
+
+                /* TABS */
+                .tabs {
+                    display: flex;
+                    gap: 10px;
+                    overflow-x: auto;
+                    padding-bottom: 10px;
+                }
+
+                .tab {
+                    padding: 8px 14px;
+                    border-radius: 30px;
+                    cursor: pointer;
+                    border: 1px solid rgba(255,255,255,0.2);
+                    background: rgba(255,255,255,0.05);
+                    transition: 0.2s;
+                    white-space: nowrap;
+                }
+
+                    .tab.active {
+                        background: linear-gradient(90deg,#7c3aed,#3b82f6);
+                        border-color: #7c3aed;
+                        box-shadow: 0 0 12px #7c3aed;
+                    }
+
+                /* UPLOAD */
+                .upload-zone {
+                    border: 2px dashed rgba(255,255,255,0.3);
+                    border-radius: 20px;
+                    text-align: center;
+                    padding: 40px;
+                    cursor: pointer;
+                    transition: 0.2s;
+                }
+
+                    .upload-zone:hover {
+                        border-color: #7c3aed;
+                        box-shadow: 0 0 18px #7c3aed;
+                    }
+
+                /* PREVIEW */
+                .preview-wrap {
+                    display: flex;
+                    gap: 20px;
+                    flex-wrap: wrap;
+                }
+
+                .preview-box {
+                    width: 100%;
+                    max-width: 450px;
+                    padding: 15px;
+                    border-radius: 20px;
+                    background: rgba(255,255,255,0.05);
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255,255,255,0.15);
+                }
+
+                    .preview-box img {
+                        width: 100%;
+                        border-radius: 15px;
+                    }
+
+                /* CONTROL SLIDERS */
+                .control {
+                    margin: 12px 0;
+                }
+
+                    .control label {
+                        display: block;
+                        margin-bottom: 5px;
+                        opacity: 0.85;
+                    }
+
+                input[type=range], input[type=number] {
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+
+                /* BUTTONS */
+                .btn {
+                    padding: 10px 18px;
+                    border-radius: 28px;
+                    border: 1px solid rgba(255,255,255,0.3);
+                    background: rgba(255,255,255,0.08);
+                    color: white;
+                    cursor: pointer;
+                    transition: 0.2s;
+                    margin: 4px 2px;
+                }
+
+                    .btn:hover {
+                        background: rgba(255,255,255,0.2);
+                        box-shadow: 0 0 12px #7c3aed;
+                    }
+
+                /* MATRIX LOADER */
+                #matrixLoader {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: rgba(0,0,0,0.85);
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    color: #00ff80;
+                    font-family: monospace;
+                    font-size: 14px;
+                    z-index: 9999;
+                }
+
+                #matrixCanvas {
+                    width: 90vw;
+                    height: 80vh;
+                }
+
+                /* HIDDEN */
+                .hidden {
+                    display: none;
+                }
+    </style>
+</head>
+<body>
+
+    <h1>🟣 IMAGE FORGE PRO</h1>
+
+    <div class="container">
+
+        <!-- Upload Card -->
+        <div class="card">
+            <div class="upload-zone" id="uploadZone">
+                <p>Click or Drag an Image Here</p>
+                <input type="file" id="fileInput" accept="image/*" hidden>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" data-mode="compress">Compress</div>
+                <div class="tab" data-mode="resize">Resize</div>
+                <div class="tab" data-mode="convert">Convert</div>
+                <div class="tab" data-mode="edit">Edit</div>
+                <div class="tab" data-mode="crop">Crop</div>
+                <div class="tab" data-mode="export">Export</div>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="card">
+            <div class="preview-wrap">
+                <div class="preview-box">
+                    <h3>Original</h3>
+                    <img id="originalPreview" src="">
+                    <p id="originalInfo"></p>
+                </div>
+
+                <div class="preview-box">
+                    <h3>Processed</h3>
+                    <canvas id="canvas" style="width:100%; border-radius:15px;"></canvas>
+                    <p id="processedInfo"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOOLS AREA -->
+        <div id="toolsArea" class="card">
+
+            <!-- COMPRESS -->
+            <div class="tool-panel" id="panel-compress">
+                <h3>Compression Settings</h3>
+                <div class="control">
+                    <label>Quality</label>
+                    <input type="range" min="0.1" max="1" step="0.05" id="qualitySlider" value="0.8">
+                </div>
+                <button class="btn" onclick="applyCompression()">Apply Compression</button>
+            </div>
+
+            <!-- RESIZE -->
+            <div class="tool-panel hidden" id="panel-resize">
+                <h3>Resize</h3>
+                <div class="control">
+                    <label>Width (px)</label>
+                    <input type="number" id="resizeWidth">
+                </div>
+                <div class="control">
+                    <label>Height (px)</label>
+                    <input type="number" id="resizeHeight">
+                </div>
+                <button class="btn" onclick="applyResize()">Resize</button>
+            </div>
+
+            <!-- CONVERT -->
+            <div class="tool-panel hidden" id="panel-convert">
+                <h3>Convert To</h3>
+                <button class="btn" onclick="applyConvert('image/jpeg')">JPG</button>
+                <button class="btn" onclick="applyConvert('image/png')">PNG</button>
+                <button class="btn" onclick="applyConvert('image/webp')">WEBP</button>
+            </div>
+
+            <!-- EDIT -->
+            <div class="tool-panel hidden" id="panel-edit">
+                <h3>Edit Tools</h3>
+
+                <div class="control">
+                    <label>Brightness</label>
+                    <input type="range" min="0" max="2" step="0.1" id="brightSlider" value="1">
+                </div>
+
+                <div class="control">
+                    <label>Contrast</label>
+                    <input type="range" min="0" max="3" step="0.1" id="contrastSlider" value="1">
+                </div>
+
+                <div class="control">
+                    <label>Saturation</label>
+                    <input type="range" min="0" max="3" step="0.1" id="satSlider" value="1">
+                </div>
+
+                <button class="btn" onclick="applyFilters()">Apply</button>
+            </div>
+
+            <!-- CROP -->
+            <div class="tool-panel hidden" id="panel-crop">
+                <h3>Crop Tool</h3>
+                <p style="opacity:0.7;">Simple rectangular crop will be added later.</p>
+            </div>
+
+            <!-- EXPORT -->
+            <div class="tool-panel hidden" id="panel-export">
+                <h3>Download</h3>
+                <button class="btn" onclick="downloadImage()">Download Processed Image</button>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MATRIX LOADER -->
+    <div id="matrixLoader">
+        <canvas id="matrixCanvas"></canvas>
+    </div>
+
+    <script>
+        /* -------------------------
+           STATE
+        --------------------------*/
+        let originalImage = null;
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+        let matrixInterval;
+
+        /* -------------------------
+           MATRIX LOADER
+        --------------------------*/
+        function startMatrix() {
+            let loader = document.getElementById("matrixLoader");
+            loader.style.display = "flex";
+
+            const c = document.getElementById("matrixCanvas");
+            const ctx2 = c.getContext("2d");
+            c.width = window.innerWidth * 0.9;
+            c.height = window.innerHeight * 0.8;
+
+            const letters = "0123456789ABCXYZ#@$%&";
+            const fontSize = 16;
+            const columns = c.width / fontSize;
+
+            const drops = [];
+            for (let i = 0; i < columns; i++) drops[i] = 1;
+
+            clearInterval(matrixInterval);
+            matrixInterval = setInterval(() => {
+                ctx2.fillStyle = "rgba(0,0,0,0.05)";
+                ctx2.fillRect(0, 0, c.width, c.height);
+
+                ctx2.fillStyle = "#00ff80";
+                ctx2.font = fontSize + "px monospace";
+
+                for (let i = 0; i < drops.length; i++) {
+                    const char = letters[Math.floor(Math.random() * letters.length)];
+                    ctx2.fillText(char, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > c.height && Math.random() > 0.975)
+                        drops[i] = 0;
+                    drops[i]++;
+                }
+            }, 40);
+        }
+
+        function stopMatrix() {
+            document.getElementById("matrixLoader").style.display = "none";
+            clearInterval(matrixInterval);
+        }
+
+        /* -------------------------
+           FILE UPLOAD
+        --------------------------*/
+        const uploadZone = document.getElementById("uploadZone");
+        const fileInput = document.getElementById("fileInput");
+
+        uploadZone.addEventListener("click", () => fileInput.click());
+        uploadZone.addEventListener("dragover", e => {
+            e.preventDefault();
+            uploadZone.style.borderColor = "#7c3aed";
+        });
+        uploadZone.addEventListener("dragleave", () => uploadZone.style.borderColor = "rgba(255,255,255,0.3)");
+        uploadZone.addEventListener("drop", e => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            loadImage(file);
+        });
+
+        fileInput.addEventListener("change", e => loadImage(e.target.files[0]));
+
+        function loadImage(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                originalImage = new Image();
+                originalImage.onload = () => {
+                    canvas.width = originalImage.width;
+                    canvas.height = originalImage.height;
+                    ctx = canvas.getContext("2d");
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(originalImage, 0, 0);
+
+                    document.getElementById("originalPreview").src = e.target.result;
+                    document.getElementById("originalInfo").innerText =
+                        `${originalImage.width} x ${originalImage.height} | ${(file.size / 1024).toFixed(1)} KB`;
+
+                    updateProcessedInfo();
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateProcessedInfo() {
+            const dataURL = canvas.toDataURL();
+            let sizeKB = Math.round((dataURL.length * (3 / 4)) / 1024);
+            document.getElementById("processedInfo").innerText =
+                `${canvas.width} x ${canvas.height} | ~${sizeKB} KB`;
+        }
+
+        /* Helper: after any operation, treat current canvas as new base image */
+        function refreshOriginalFromCanvas() {
+            const dataURL = canvas.toDataURL();
+            const img = new Image();
+            img.onload = () => { originalImage = img; };
+            img.src = dataURL;
+        }
+
+        /* -------------------------
+           TABS
+        --------------------------*/
+        document.querySelectorAll(".tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+
+                document.querySelectorAll(".tool-panel").forEach(p => p.classList.add("hidden"));
+                document.getElementById("panel-" + tab.dataset.mode).classList.remove("hidden");
+            });
+        });
+
+        /* -------------------------
+           COMPRESSION
+        --------------------------*/
+        function applyCompression() {
+            if (!originalImage) return;
+            startMatrix();
+
+            setTimeout(() => {
+                let q = parseFloat(document.getElementById("qualitySlider").value);
+                const temp = document.createElement("canvas");
+                temp.width = canvas.width;
+                temp.height = canvas.height;
+                const tctx = temp.getContext("2d");
+                tctx.drawImage(canvas, 0, 0);
+
+                let dataURL = temp.toDataURL("image/jpeg", q);
+                let img = new Image();
+
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx = canvas.getContext("2d");
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    updateProcessedInfo();
+                    refreshOriginalFromCanvas();
+                    stopMatrix();
+                };
+                img.src = dataURL;
+            }, 600);
+        }
+
+        /* -------------------------
+           RESIZE
+        --------------------------*/
+        function applyResize() {
+            if (!originalImage) return;
+            let w = parseInt(document.getElementById("resizeWidth").value);
+            let h = parseInt(document.getElementById("resizeHeight").value);
+            if (!w || !h) return;
+
+            startMatrix();
+            setTimeout(() => {
+                const temp = document.createElement("canvas");
+                temp.width = w;
+                temp.height = h;
+                const tctx = temp.getContext("2d");
+                tctx.drawImage(canvas, 0, 0, w, h);
+
+                canvas.width = w;
+                canvas.height = h;
+                ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(temp, 0, 0);
+
+                updateProcessedInfo();
+                refreshOriginalFromCanvas();
+                stopMatrix();
+            }, 700);
+        }
+
+        /* -------------------------
+           CONVERT
+        --------------------------*/
+        function applyConvert(fmt) {
+            if (!originalImage) return;
+            startMatrix();
+
+            setTimeout(() => {
+                const temp = document.createElement("canvas");
+                temp.width = canvas.width;
+                temp.height = canvas.height;
+                const tctx = temp.getContext("2d");
+                tctx.drawImage(canvas, 0, 0);
+
+                let dataURL = temp.toDataURL(fmt);
+                let img = new Image();
+
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx = canvas.getContext("2d");
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    updateProcessedInfo();
+                    refreshOriginalFromCanvas();
+                    stopMatrix();
+                };
+                img.src = dataURL;
+            }, 650);
+        }
+
+        /* -------------------------
+           EDIT / FILTERS
+        --------------------------*/
+        function applyFilters() {
+            if (!originalImage) return;
+
+            let bright = document.getElementById("brightSlider").value;
+            let contrast = document.getElementById("contrastSlider").value;
+            let sat = document.getElementById("satSlider").value;
+
+            startMatrix();
+            setTimeout(() => {
+                const temp = document.createElement("canvas");
+                temp.width = canvas.width;
+                temp.height = canvas.height;
+                const tctx = temp.getContext("2d");
+                tctx.drawImage(canvas, 0, 0); // use current processed image as base
+
+                ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.filter = `brightness(${bright}) contrast(${contrast}) saturate(${sat})`;
+                ctx.drawImage(temp, 0, 0, canvas.width, canvas.height);
+                ctx.filter = "none";
+
+                updateProcessedInfo();
+                refreshOriginalFromCanvas();
+                stopMatrix();
+            }, 800);
+        }
+
+        /* -------------------------
+           DOWNLOAD
+        --------------------------*/
+        function downloadImage() {
+            if (!originalImage) return;
+            let link = document.createElement("a");
+            link.download = `ImageForgePro_${Date.now()}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        }
+
+    </script>
+</body>
+</html>
